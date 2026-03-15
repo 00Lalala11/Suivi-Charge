@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>⚡ Suivi de Charge</title>
+<style>
+  :root {
+    --bg: #0d0d1a;
+    --surface: #13132a;
+    --card: #1a1a35;
+    --border: #2a2a50;
+    --orange: #ff8c00;
+    --green: #00e676;
+    --red: #ff3d3d;
+    --yellow: #ffd700;
+    --blue-r: #00e5ff;
+    --blue-f: #ff4daa;
+    --text: #e0e0f0;
+    --muted: #7070a0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 30px;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #0d0d1a 0%, #1a1040 100%);
+    border-bottom: 2px solid var(--orange);
+    padding: 14px 16px 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(255,140,0,0.15);
+  }
+
+  .header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--yellow);
+    text-transform: uppercase;
+  }
+
+
+  .legend {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  .legend span {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* Stats bar */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-box {
+    text-align: center;
+    padding: 6px 4px;
+    border-radius: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+
+  .stat-box .num {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .stat-box .label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+
+  .stat-box.orange .num { color: var(--orange); }
+  .stat-box.green .num { color: var(--green); }
+  .stat-box.red .num { color: var(--red); }
+
+  /* Spots grid */
+  .spots {
+    padding: 10px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .spot {
+    background: var(--bg);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .spot.charging { border-color: var(--orange); box-shadow: 0 0 10px rgba(255,140,0,0.15); }
+  .spot.done     { border-color: var(--green);  box-shadow: 0 0 10px rgba(0,230,118,0.12); }
+  .spot.free     { border-color: var(--border); }
+
+  .spot-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+  }
+
+  .spot-num {
+    font-family: 'Courier New', monospace;
+    font-size: 17px;
+    font-weight: 700;
+    color: #ffffff;
+    min-width: 28px;
+  }
+
+  .brand {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    flex: 1;
+  }
+
+  .brand.renault { color: var(--blue-r); }
+  .brand.ford    { color: var(--blue-f); }
+
+  .status-pill {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .status-pill.free     { background: rgba(255,61,61,0.15);  color: var(--red);    border: 1px solid rgba(255,61,61,0.3); }
+  .status-pill.charging { background: rgba(255,140,0,0.15); color: var(--orange); border: 1px solid rgba(255,140,0,0.3); }
+  .status-pill.done     { background: rgba(0,230,118,0.12); color: var(--green);  border: 1px solid rgba(0,230,118,0.3); }
+
+  /* Expanded info */
+  .spot-body {
+    display: none;
+    padding: 0 12px 10px;
+    gap: 8px;
+    flex-direction: column;
+  }
+
+  .spot.active .spot-body { display: flex; }
+
+  .time-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .info-box {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+  }
+
+  .info-box .ilabel {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .info-box .ival {
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .info-box .ival.orange { color: var(--orange); }
+  .info-box .ival.green  { color: var(--green); }
+  .info-box .ival.yellow { color: var(--yellow); }
+
+  /* Time input */
+  .input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .time-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--orange);
+    border-radius: 8px;
+    color: var(--orange);
+    font-family: 'Courier New', monospace;
+    font-size: 20px;
+    padding: 8px 12px;
+    text-align: center;
+    outline: none;
+    -webkit-appearance: none;
+  }
+
+  .time-input:focus { border-color: var(--yellow); box-shadow: 0 0 8px rgba(255,215,0,0.2); }
+
+  .btn-plug {
+    background: var(--orange);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+
+  .btn-plug:active { background: var(--yellow); }
+
+  .btn-unplug {
+    background: transparent;
+    color: var(--red);
+    border: 1px solid var(--red);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s;
+  }
+
+  .btn-unplug:active { background: rgba(255,61,61,0.15); }
+
+  /* Progress bar */
+  .progress-wrap {
+    background: var(--surface);
+    border-radius: 6px;
+    height: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .progress-bar {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 1s linear;
+    background: linear-gradient(90deg, var(--orange), var(--yellow));
+  }
+
+  .progress-bar.done { background: linear-gradient(90deg, var(--green), #69f0ae); }
+
+  .progress-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  /* Collapse toggle */
+  .spot-header { cursor: pointer; user-select: none; }
+  .toggle-icon {
+    font-size: 11px;
+    color: var(--muted);
+    transition: transform 0.2s;
+  }
+  .spot.active .toggle-icon { transform: rotate(180deg); }
+
+  /* Brand selector */
+  .brand-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 6px 10px;
+    outline: none;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ Suivi de Charge</h1>
+  <div class="legend">
+    <span>🟠 En charge</span>
+    <span>🟢 Chargée</span>
+    <span>🔴 Libre</span>
+    <span>R = 6h &nbsp;|&nbsp; Ford = 3h</span>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat-box orange">
+    <div class="num" id="stat-charging">0</div>
+    <div class="label">EN CHARGE</div>
+  </div>
+  <div class="stat-box green">
+    <div class="num" id="stat-done">0</div>
+    <div class="label">CHARGÉES</div>
+  </div>
+  <div class="stat-box red">
+    <div class="num" id="stat-free">20</div>
+    <div class="label">LIBRES</div>
+  </div>
+</div>
+
+<div class="spots" id="spots"></div>
+
+<script>
+const BRANDS_DEFAULT = [
+  "Renault","Renault","Ford","Renault","Ford",
+  "Renault","Renault","Ford","Renault","Renault",
+  "Ford","Renault","Renault","Ford","Renault",
+  "Ford","Renault","Renault","Ford","Renault"
+];
+
+const DURATION = { Renault: 6, Ford: 3 };
+
+// Storage with multiple fallbacks
+function loadState() {
+  // Try localStorage
+  try {
+    const s = localStorage.getItem('chargeState');
+    if (s) {
+      const parsed = JSON.parse(s);
+      return parsed.map(x => ({ ...x, brand: x.brand === 'Dacia' ? 'Renault' : x.brand }));
+    }
+  } catch(e) {}
+  // Try sessionStorage
+  try {
+    const s = sessionStorage.getItem('chargeState');
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  return null;
+}
+
+let state = loadState() || BRANDS_DEFAULT.map((brand, i) => ({
+  id: i + 1, brand, startTime: null
+}));
+
+function saveState() {
+  const data = JSON.stringify(state);
+  try { localStorage.setItem('chargeState', data); } catch(e) {}
+  try { sessionStorage.setItem('chargeState', data); } catch(e) {}
+}
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function formatTime(date) {
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function formatRemaining(ms) {
+  if (ms <= 0) return "✅ Prête";
+  const totalMin = Math.floor(ms / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return h > 0 ? `${h}h ${pad(m)}min` : `${m} min`;
+}
+
+function parseTimeInput(val) {
+  // val is "HH:MM"
+  const now = new Date();
+  const [h, m] = val.split(':').map(Number);
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+  return d;
+}
+
+function getStatus(spot) {
+  if (!spot.startTime) return 'free';
+  const now = Date.now();
+  const start = new Date(spot.startTime).getTime();
+  const dur = (DURATION[spot.brand] || 6) * 3600000;
+  const end = start + dur;
+  if (now >= end) return 'done';
+  return 'charging';
+}
+
+function getProgress(spot) {
+  if (!spot.startTime) return 0;
+  const now = Date.now();
+  const start = new Date(spot.startTime).getTime();
+  const dur = (DURATION[spot.brand] || 6) * 3600000;
+  return Math.min(100, Math.round((now - start) / dur * 100));
+}
+
+function getEndTime(spot) {
+  if (!spot.startTime) return null;
+  const start = new Date(spot.startTime).getTime();
+  const dur = (DURATION[spot.brand] || 6) * 3600000;
+  return new Date(start + dur);
+}
+
+function renderSpots() {
+  const container = document.getElementById('spots');
+  container.innerHTML = '';
+
+  state.forEach((spot, idx) => {
+    const status = getStatus(spot);
+    const div = document.createElement('div');
+    div.className = `spot ${status}`;
+    div.id = `spot-${spot.id}`;
+
+    const statusLabel = status === 'free' ? '🔴 Libre' : status === 'charging' ? '🟠 En charge' : '🟢 Chargée';
+    const statusClass = status;
+    const brandClass = spot.brand === 'Ford' ? 'ford' : 'renault';
+
+    const endTime = getEndTime(spot);
+    const remaining = endTime ? formatRemaining(endTime.getTime() - Date.now()) : '—';
+    const progress = getProgress(spot);
+
+    div.innerHTML = `
+      <div class="spot-header" onclick="toggleSpot(${idx})">
+        <span class="spot-num">P${pad(spot.id)}</span>${spot.id === 3 ? '<span style="font-size:10px;color:#ff8c00;font-weight:500;margin-left:2px;">(Libérer 16h Jockeys)</span>' : ''}
+        <span class="brand ${brandClass}">${spot.brand} <span style="color:#ffffff;font-weight:400;font-size:12px;">(${spot.brand==='Ford'?'~3h':'6h'})</span></span>
+        <span class="status-pill ${statusClass}">${statusLabel}</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="spot-body">
+        <select class="brand-select" onchange="changeBrand(${idx}, this.value)">
+          <option ${spot.brand==='Renault'?'selected':''}>Renault</option>
+          <option ${spot.brand==='Ford'?'selected':''}>Ford</option>
+        </select>
+        ${status !== 'free' ? `
+        <div class="time-row">
+          <div class="info-box">
+            <div class="ilabel">Branché à</div>
+            <div class="ival orange">${formatTime(new Date(spot.startTime))}</div>
+          </div>
+          <div class="info-box">
+            <div class="ilabel">Fin prévue</div>
+            <div class="ival green">${endTime ? formatTime(endTime) : '—'}</div>
+          </div>
+        </div>
+        <div class="info-box">
+          <div class="ilabel">Temps restant</div>
+          <div class="ival ${status==='done'?'green':'orange'}">${remaining}</div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar ${status==='done'?'done':''}" style="width:${progress}%"></div>
+        </div>
+        <p class="progress-label">${progress}% chargé</p>
+        <button class="btn-unplug" onclick="unplug(${idx})">🔌 Débrancher</button>
+        ` : `
+        <button class="btn-plug" style="width:100%;font-size:17px;padding:14px;border-radius:10px;" onclick="plug(${idx})">⚡ BRANCHER MAINTENANT</button>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          <input type="time" id="manual-time-${idx}" style="flex:1;background:#2C2C45;border:1px solid #ff8c00;border-radius:8px;color:#ff8c00;font-size:16px;padding:10px;text-align:center;outline:none;-webkit-appearance:none;">
+          <button class="btn-plug" style="font-size:13px;padding:10px 12px;border-radius:8px;white-space:nowrap;" onclick="plugManual(${idx})">🕐 Heure perso</button>
+        </div>
+        `}
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
+
+  updateStats();
+}
+
+function toggleSpot(idx) {
+  const el = document.getElementById(`spot-${state[idx].id}`);
+  el.classList.toggle('active');
+}
+
+function plug(idx) {
+  state[idx].startTime = new Date().toISOString();
+  saveState();
+  renderSpots();
+  setTimeout(() => {
+    const el = document.getElementById(`spot-${state[idx].id}`);
+    if (el) el.classList.add('active');
+  }, 10);
+}
+
+function plugManual(idx) {
+  const input = document.getElementById(`manual-time-${idx}`);
+  if (!input || !input.value) { alert('Entre une heure svp !'); return; }
+  const [h, m] = input.value.split(':').map(Number);
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+  state[idx].startTime = d.toISOString();
+  saveState();
+  renderSpots();
+  setTimeout(() => {
+    const el = document.getElementById(`spot-${state[idx].id}`);
+    if (el) el.classList.add('active');
+  }, 10);
+}
+
+function unplug(idx) {
+  state[idx].startTime = null;
+  saveState();
+  renderSpots();
+}
+
+function changeBrand(idx, brand) {
+  state[idx].brand = brand;
+  saveState();
+  renderSpots();
+  setTimeout(() => {
+    const el = document.getElementById(`spot-${state[idx].id}`);
+    if (el) el.classList.add('active');
+  }, 10);
+}
+
+function updateStats() {
+  let charging = 0, done = 0, free = 0;
+  state.forEach(s => {
+    const st = getStatus(s);
+    if (st === 'charging') charging++;
+    else if (st === 'done') done++;
+    else free++;
+  });
+  document.getElementById('stat-charging').textContent = charging;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-free').textContent = free;
+}
+
+
+
+// Refresh every 30s
+setInterval(() => { renderSpots(); updateClock(); }, 30000);
+
+renderSpots();
+</script>
+</body>
+</html>
