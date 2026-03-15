@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>📋 Procédure Renault</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --card: #12121e;
+    --surface: #1a1a2e;
+    --border: #2a2a45;
+    --renault: #ffcc00;
+    --renault2: #ff8800;
+    --green: #00e676;
+    --red: #ff4444;
+    --blue: #4fc3f7;
+    --text: #f0f0ff;
+    --muted: #8888aa;
+    --warning: #ff6b35;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1a1000 0%, #2a1800 100%);
+    border-bottom: 3px solid var(--renault);
+    padding: 8px 16px 6px;
+    text-align: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 20px rgba(255,204,0,0.2);
+  }
+
+  .header .logo {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .header h1 {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--renault);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .header .subtitle {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+    letter-spacing: 1px;
+  }
+
+  /* Section */
+  .sections-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .section {
+    flex: 1;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .section-header {
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-header.debut {
+    background: linear-gradient(135deg, #1a2a00, #243300);
+    border-bottom: 2px solid var(--green);
+  }
+
+  .section-header.fin {
+    background: linear-gradient(135deg, #2a0a00, #331500);
+    border-bottom: 2px solid var(--renault2);
+  }
+
+  .section-icon {
+    font-size: 18px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .section-header.debut .section-title { color: var(--green); }
+  .section-header.fin .section-title { color: var(--renault2); }
+
+  .section-body {
+    background: var(--card);
+    padding: 8px 10px 10px;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Step */
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .step:last-child { margin-bottom: 0; }
+
+  .step-num {
+    min-width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .debut .step-num { background: rgba(0,230,118,0.15); color: var(--green); border: 1px solid rgba(0,230,118,0.4); }
+  .fin .step-num   { background: rgba(255,136,0,0.15);  color: var(--renault2); border: 1px solid rgba(255,136,0,0.4); }
+
+  .step-text {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .step-text strong {
+    color: var(--renault);
+    font-weight: 700;
+  }
+
+  /* Warning steps */
+  .step.warning {
+    background: rgba(255,107,53,0.08);
+    border-color: rgba(255,107,53,0.35);
+  }
+
+  .step.warning .step-text {
+    color: var(--warning);
+    font-weight: 700;
+  }
+
+  /* Sub-items */
+  .sub-items {
+    margin-top: 3px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+
+  .tag {
+    background: rgba(255,204,0,0.1);
+    border: 1px solid rgba(255,204,0,0.3);
+    color: var(--renault);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+  }
+
+  .tag.blue {
+    background: rgba(79,195,247,0.1);
+    border-color: rgba(79,195,247,0.3);
+    color: var(--blue);
+  }
+
+  .tag.green {
+    background: rgba(0,230,118,0.1);
+    border-color: rgba(0,230,118,0.3);
+    color: var(--green);
+  }
+
+  .tag.orange {
+    background: rgba(255,136,0,0.1);
+    border-color: rgba(255,136,0,0.3);
+    color: var(--renault2);
+  }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 5px 0;
+  }
+
+  /* Footer */
+  .footer {
+    margin: 14px 12px 0;
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid rgba(255,204,0,0.2);
+    padding: 10px 14px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">⚡ Fiche mémo</div>
+  <h1>🔧 Procédure Renault</h1>
+  <div class="subtitle">Chargement véhicule hybride</div>
+</div>
+
+<div class="sections-wrap">
+<!-- DÉBUT DE CHARGE -->
+<div class="section">
+  <div class="section-header debut">
+    <span class="section-icon">🔌</span>
+    <span class="section-title">Début de charge</span>
+  </div>
+  <div class="section-body debut">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">Récupérer les <strong>Renaults à côté du bureau</strong></div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">Se garer : <strong>coller ligne de gauche</strong>, fermer les rétros, ouvrir le capot, sortir la <strong>feuille blanche</strong></div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        Remplir la <strong>feuille blanche</strong> :
+        <div class="sub-items">
+          <span class="tag">[0]</span>
+          <span class="tag orange">Code (R09B)</span>
+          <span class="tag">📅 Date</span>
+          <span class="tag">👤 Nom + Signature</span>
+          <span class="tag blue">🕐 Heure début</span>
+          <span class="tag">🔋 Ampère à 1min</span>
+          <span class="tag green">🟦 % Hybrid</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text">
+        Charger la voiture dans l'ordre :
+        <div class="sub-items">
+          <span class="tag blue" style="font-size:10px;padding:2px 5px;">🟫 Tapis</span>
+          <span class="tag" style="font-size:10px;padding:2px 5px;">🔴 Rouge</span>
+          <span class="tag" style="font-size:10px;padding:2px 5px;">⚫ Noir</span>
+          <span class="tag orange" style="font-size:10px;padding:2px 5px;">Diag+</span>
+          <span class="tag green" style="font-size:10px;padding:2px 5px;">▶️ Start</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FIN DE CHARGE -->
+<div class="section">
+  <div class="section-header fin">
+    <span class="section-icon">✅</span>
+    <span class="section-title">Fin de charge</span>
+  </div>
+  <div class="section-body fin">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        Remplir la feuille :
+        <div class="sub-items">
+          <span class="tag">⚡ Tension + Ampères</span>
+          <span class="tag blue">⏱ Durée charge (6h..)</span>
+          <span class="tag blue">🕐 Temps de charge</span>
+          <span class="tag green">🟦 % Hybrid 50%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        Débrancher la voiture :
+        <div class="sub-items">
+          <span class="tag blue">🟫 Tapis</span>
+          <span class="tag">🔴 Rouge</span>
+          <span class="tag">⬛ Noir</span>
+          <span class="tag orange">🔒 Fermer capot</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step warning">
+      <div class="step-num">🚨</div>
+      <div class="step-text">
+        Aller au bureau :
+        <div class="sub-items" style="margin-top:4px;">
+          <span class="tag">📎 Agrafes</span>
+          <span class="tag blue">📄 Photocopier feuille</span>
+          <span class="tag">📅 Date + Signature</span>
+          <span class="tag orange">Scan : Atel R09B</span>
+          <span class="tag green">✅ Valider</span>
+          <span class="tag blue">🖨️ Récupérer imprimante</span>
+          <span class="tag">🧤 Boîte à gants</span>
+          <span class="tag orange">🔍 Vérifier châssis</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text">
+        Sortir la Renault :
+        <div class="sub-items">
+          <span class="tag orange">🌡️ Chauffage max</span>
+          <span class="tag blue">⏳ Attendre 5min</span>
+          <span class="tag green">🔋 Hybrid charge</span>
+          <span class="tag" style="background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:#ff4444;">🔴 Éteindre — Fin</span>
+        </div>
+      </div>
+    </div>
+
+  </div>  </div>
+</div>
+
+</div>
+<div class="footer" style="display:none;">
+  🔧 Renault — Véhicule hybride &nbsp;|&nbsp; Ford à venir
+</div>
+
+</body>
+</html>
