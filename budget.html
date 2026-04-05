@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>💰 Budget du mois</title>
+<style>
+  :root {
+    --bg: #0d0d1a;
+    --surface: #13132a;
+    --card: #1a1a35;
+    --border: #2a2a50;
+    --yellow: #ffd700;
+    --green: #00e676;
+    --red: #ff4444;
+    --orange: #ff8c00;
+    --text: #e0e0f0;
+    --muted: #7070a0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0d0d1a 0%, #1a1040 100%);
+    border-bottom: 2px solid var(--yellow);
+    padding: 14px 16px 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(255,215,0,0.15);
+    text-align: center;
+  }
+
+  .header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--yellow);
+    text-transform: uppercase;
+  }
+
+  /* Salaire box */
+  .salaire-wrap {
+    margin: 12px 12px 0;
+    background: linear-gradient(135deg, #1a3a1a, #0d200d);
+    border-radius: 14px;
+    border: 1px solid rgba(0,230,118,0.3);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .salaire-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--green);
+    flex: 1;
+  }
+
+  .salaire-input {
+    background: rgba(0,230,118,0.08);
+    border: 1px solid rgba(0,230,118,0.4);
+    border-radius: 8px;
+    color: var(--green);
+    font-size: 18px;
+    font-weight: 700;
+    padding: 8px 12px;
+    width: 140px;
+    text-align: right;
+    outline: none;
+    -webkit-appearance: none;
+  }
+
+  .salaire-input::placeholder { color: rgba(0,230,118,0.3); }
+
+  /* Summary bar */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px 12px;
+    margin-top: 10px;
+  }
+
+  .sum-box {
+    background: var(--card);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 8px 6px;
+    text-align: center;
+  }
+
+  .sum-box .num {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .sum-box .lbl {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 3px;
+    letter-spacing: 0.5px;
+  }
+
+  .sum-box.salaire .num { color: var(--green); }
+  .sum-box.depenses .num { color: var(--red); }
+  .sum-box.reste .num { color: var(--yellow); }
+  .sum-box.reste.negative .num { color: var(--red); }
+
+  /* Section title */
+  .section-title {
+    padding: 10px 14px 4px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Expense list */
+  .expenses {
+    padding: 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .expense-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+  }
+
+  .expense-row .num-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 700;
+    min-width: 22px;
+    font-family: 'Courier New', monospace;
+  }
+
+  .expense-title {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 14px;
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    outline: none;
+    padding: 2px 0;
+  }
+
+  .expense-title::placeholder { color: var(--muted); font-size: 13px; }
+
+  .expense-amount {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--orange);
+    font-size: 14px;
+    font-weight: 700;
+    padding: 5px 8px;
+    width: 90px;
+    text-align: right;
+    outline: none;
+    -webkit-appearance: none;
+    font-family: 'Courier New', monospace;
+  }
+
+  .expense-amount::placeholder { color: rgba(255,140,0,0.3); font-size: 12px; }
+  .expense-amount:focus { border-color: var(--orange); }
+
+  .expense-euro {
+    font-size: 13px;
+    color: var(--muted);
+    min-width: 12px;
+  }
+
+  /* Total bar */
+  .total-wrap {
+    margin: 12px 12px 0;
+    background: linear-gradient(135deg, #2a0a0a, #1a0505);
+    border-radius: 14px;
+    border: 1px solid rgba(255,68,68,0.3);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .total-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--red);
+  }
+
+  .total-amount {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--red);
+    font-family: 'Courier New', monospace;
+  }
+
+  /* Reste bar */
+  .reste-wrap {
+    margin: 8px 12px 0;
+    border-radius: 14px;
+    border: 1px solid rgba(255,215,0,0.3);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.3s;
+  }
+
+  .reste-wrap.positive { background: linear-gradient(135deg, #1a1a00, #2a2500); }
+  .reste-wrap.negative { background: linear-gradient(135deg, #2a0a0a, #1a0505); border-color: rgba(255,68,68,0.3); }
+
+  .reste-label {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .reste-wrap.positive .reste-label { color: var(--yellow); }
+  .reste-wrap.negative .reste-label { color: var(--red); }
+
+  .reste-amount {
+    font-size: 22px;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+  }
+
+  .reste-wrap.positive .reste-amount { color: var(--yellow); }
+  .reste-wrap.negative .reste-amount { color: var(--red); }
+
+  /* Add row button */
+  .btn-add {
+    display: block;
+    margin: 10px 12px 0;
+    background: rgba(255,140,0,0.1);
+    border: 1px dashed rgba(255,140,0,0.4);
+    border-radius: 10px;
+    color: var(--orange);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    width: calc(100% - 24px);
+  }
+
+  /* Reset button */
+  .btn-reset {
+    display: block;
+    margin: 8px 12px 0;
+    background: transparent;
+    border: 1px solid rgba(255,68,68,0.3);
+    border-radius: 10px;
+    color: var(--red);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    width: calc(100% - 24px);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>💰 Budget du mois</h1>
+</div>
+
+<!-- Salaire -->
+<div class="salaire-wrap">
+  <span class="salaire-label">💵 Salaire</span>
+  <input type="number" class="salaire-input" id="salaire" placeholder="0" inputmode="decimal" onchange="save()">
+  <span style="color:var(--green);font-weight:700;">€</span>
+</div>
+
+<!-- Summary -->
+<div class="summary">
+  <div class="sum-box salaire">
+    <div class="num" id="sum-salaire">—</div>
+    <div class="lbl">SALAIRE</div>
+  </div>
+  <div class="sum-box depenses">
+    <div class="num" id="sum-depenses">0 €</div>
+    <div class="lbl">DÉPENSES</div>
+  </div>
+  <div class="sum-box reste" id="sum-reste-box">
+    <div class="num" id="sum-reste">—</div>
+    <div class="lbl">RESTE</div>
+  </div>
+</div>
+
+<!-- Expenses -->
+<div class="section-title">📋 Mes dépenses</div>
+<div class="expenses" id="expenses"></div>
+
+<button class="btn-add" onclick="addRow()">+ Ajouter une dépense</button>
+
+<!-- Total -->
+<div class="total-wrap">
+  <span class="total-label">📊 Total dépenses</span>
+  <span class="total-amount" id="total">0 €</span>
+</div>
+
+<!-- Reste -->
+<div class="reste-wrap positive" id="reste-wrap">
+  <span class="reste-label" id="reste-label">✅ Reste</span>
+  <span class="reste-amount" id="reste">—</span>
+</div>
+
+<button class="btn-reset" onclick="resetAll()">🗑️ Tout effacer</button>
+
+<script>
+let rows = [];
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('budgetState');
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  try {
+    const s = sessionStorage.getItem('budgetState');
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  return null;
+}
+
+function saveState() {
+  const salaire = document.getElementById('salaire').value;
+  const data = JSON.stringify({ salaire, rows });
+  try { localStorage.setItem('budgetState', data); } catch(e) {}
+  try { sessionStorage.setItem('budgetState', data); } catch(e) {}
+}
+
+function addRow(title='', amount='') {
+  const idx = rows.length;
+  rows.push({ title, amount });
+
+  const container = document.getElementById('expenses');
+  const div = document.createElement('div');
+  div.className = 'expense-row';
+  div.id = `row-${idx}`;
+  div.innerHTML = `
+    <span class="num-label">${String(idx+1).padStart(2,'0')}</span>
+    <input type="text" class="expense-title" placeholder="Nom de la dépense..." value="${title}" oninput="updateRow(${idx}, 'title', this.value)">
+    <input type="number" class="expense-amount" placeholder="0.00" value="${amount}" inputmode="decimal" oninput="updateRow(${idx}, 'amount', this.value)">
+    <span class="expense-euro">€</span>
+  `;
+  container.appendChild(div);
+  updateTotals();
+}
+
+function updateRow(idx, field, value) {
+  rows[idx][field] = value;
+  updateTotals();
+  saveState();
+}
+
+function updateTotals() {
+  const salaire = parseFloat(document.getElementById('salaire').value) || 0;
+  const total = rows.reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+  const reste = salaire - total;
+
+  document.getElementById('total').textContent = total.toFixed(2) + ' €';
+  document.getElementById('sum-depenses').textContent = total.toFixed(2) + ' €';
+  document.getElementById('sum-salaire').textContent = salaire > 0 ? salaire.toFixed(2) + ' €' : '—';
+
+  const resteEl = document.getElementById('reste');
+  const resteBox = document.getElementById('sum-reste-box');
+  const resteWrap = document.getElementById('reste-wrap');
+  const resteLabel = document.getElementById('reste-label');
+  const sumReste = document.getElementById('sum-reste');
+
+  if (salaire > 0) {
+    resteEl.textContent = reste.toFixed(2) + ' €';
+    sumReste.textContent = reste.toFixed(2) + ' €';
+    if (reste >= 0) {
+      resteWrap.className = 'reste-wrap positive';
+      resteLabel.textContent = '✅ Reste';
+      resteBox.className = 'sum-box reste';
+    } else {
+      resteWrap.className = 'reste-wrap negative';
+      resteLabel.textContent = '⚠️ Dépassement';
+      resteBox.className = 'sum-box reste negative';
+    }
+  } else {
+    resteEl.textContent = '—';
+    sumReste.textContent = '—';
+    resteWrap.className = 'reste-wrap positive';
+  }
+
+  saveState();
+}
+
+function resetAll() {
+  if (!confirm('Effacer toutes les données ?')) return;
+  rows = [];
+  document.getElementById('salaire').value = '';
+  document.getElementById('expenses').innerHTML = '';
+  updateTotals();
+  try { localStorage.removeItem('budgetState'); } catch(e) {}
+  try { sessionStorage.removeItem('budgetState'); } catch(e) {}
+  // Add default empty rows
+  for (let i = 0; i < 5; i++) addRow();
+}
+
+function save() {
+  updateTotals();
+  saveState();
+}
+
+// Init
+const saved = loadState();
+if (saved) {
+  document.getElementById('salaire').value = saved.salaire || '';
+  if (saved.rows && saved.rows.length > 0) {
+    saved.rows.forEach(r => addRow(r.title, r.amount));
+  } else {
+    for (let i = 0; i < 5; i++) addRow();
+  }
+} else {
+  for (let i = 0; i < 5; i++) addRow();
+}
+updateTotals();
+</script>
+</body>
+</html>
